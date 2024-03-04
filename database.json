@@ -1,0 +1,6 @@
+{
+    "dbtype" : "mysql",
+    "dbname" : "topicos",
+    "user" : "root",
+    "password" : "root"
+}
