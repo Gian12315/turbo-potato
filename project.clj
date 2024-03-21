@@ -9,10 +9,11 @@
                  [ring/ring-json "0.5.1"]
                  [com.github.seancorfield/honeysql "2.5.1103"]
                  [com.github.seancorfield/next.jdbc "1.3.909"]
-                 [com.h2database/h2 "2.2.224"]]
+                 [org.xerial/sqlite-jdbc "3.45.1.0"]]
   :plugins [[lein-ring "0.12.5"]]
   :ring {:init topicos.handler/setup-app
-         :handler topicos.handler/app}
+         :handler topicos.handler/app
+         :port 3000}
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                         [ring/ring-mock "0.3.2"]]}})
