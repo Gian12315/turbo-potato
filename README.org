@@ -14,9 +14,40 @@ Para iniciar el servidor, ejectuta:
 #+end_src
 
 * Endpoints
+Todas las peticiones esperan entrada JSON y regresan JSON
 ** GET
 #+begin_example
-/metrics - Regresa todos los registros de la base de datos
+/metrics
+- Regresa todos los registros de metricas
+  [
+    {
+      "humidity": INTEGER,
+      "time": DATETIME
+    },
+    ...
+  ]
 
+/metrics/last
+- Regresa el ultimo registro de metricas
+  [
+    {
+      "humidity": INTEGER,
+      "time": DATETIME
+    }
+  ]
+
+/metrics/insert
+- Espera una metrica en formato JSON
+{
+  "humidity": INTEGER
+}
+- Regresa el ultimo registro de metricas
+  [
+    {
+      "humidity": INTEGER,
+      "time": DATETIME
+    }
+  ]
+  
 #+end_example
 
