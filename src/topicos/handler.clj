@@ -12,16 +12,6 @@
    [ring.util.response :as res]))
 
 
-(defmacro JSON-GET
-  "Define a compojure route with a JSON response"
-  [& body]
-  `(wrap-json-response (GET ~@body)))
-
-(defmacro JSON-POST
-  "Define a compojure route with a JSON response"
-  [& body]
-  `(wrap-json-body (POST ~@body)))
-
 ;; Equivalent to
 ;; (def app-routes
 ;;   (routes
@@ -46,13 +36,8 @@
   (route/not-found "Not Found"))
 
 (def app
-  ;; (->> (wrap-defaults app-routes api-defaults)
-  ;;      (wrap-keyword-params)
-  ;;      (wrap-json-body)
-  ;;      (wrap-json-response)
-  ;;      (logger/wrap-with-logger)))
-
-  (wrap-defaults (-> app-routes
-                     wrap-json-response
-                     wrap-json-body
-                     wrap-with-logger) api-defaults))
+  (-> app-routes
+      wrap-json-response
+      wrap-json-body
+      wrap-with-logger
+      (wrap-defaults api-defaults)))
