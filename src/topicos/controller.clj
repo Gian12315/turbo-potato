@@ -24,10 +24,20 @@
 
 (defn metrics-insert [humidity]
   (try
-    (let [val (s/conform :data/metric (Float/parseFloat humidity))] 
-      (db/insert-metric val)
-      (logging/info val)
+    (let [value (s/conform :data/metric (Float/parseFloat humidity))]
+      (when (s/invalid? value)
+        (throw (IllegalArgumentException.)))
+      
+      (db/insert-metric value)
       (res/status (metrics-last) 201))
     
-    (catch NumberFormatException _ (res/status (res/response (str "Sent value '" humidity "' is not a number")) 400))))
+    (catch NumberFormatException _
+      (-> (s/explain-str :data/metric humidity)
+          res/response
+          (res/status 400)))
+    
+    (catch IllegalArgumentException _
+      (-> (s/explain-str :data/metric (Float/parseFloat humidity))
+          res/response
+          (res/status 400)))))
 
