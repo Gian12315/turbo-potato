@@ -20,11 +20,10 @@
                               :from [:metrics]}))
 
 (defn select-last-metric []
-  (jdbc/execute! ds
-                 (sql/format {:select [:humidity :time]
+  (execute-sql {:select [:humidity :time]
                               :from [:metrics]
                               :order-by [[:id :desc]]
-                              :limit 1})))
+                              :limit 1}))
 
 (defn insert-metric [humidity]
   (let [timestamp (java.time.LocalDateTime/ofInstant (java.time.Instant/now) (java.time.ZoneId/of "Mexico/General"))]
