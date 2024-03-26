@@ -24,20 +24,29 @@
 
 (defn metrics-insert [humidity]
   (try
-    (let [value (s/conform :data/metric (Float/parseFloat humidity))]
+    (let [value (s/conform :data/metric humidity)]
       (when (s/invalid? value)
         (throw (IllegalArgumentException.)))
       
       (db/insert-metric value)
       (res/status (metrics-last) 201))
     
-    (catch NumberFormatException _
+    (catch IllegalArgumentException _
       (-> (s/explain-str :data/metric humidity)
           res/response
-          (res/status 400)))
+          (res/status 400)))))
+
+(defn images-insert [json]
+  (try
+    (when (s/invalid? (s/conform :data/image-json json))
+      (throw (IllegalArgumentException.)))
+
+    (db/insert-image json)
     
     (catch IllegalArgumentException _
-      (-> (s/explain-str :data/metric (Float/parseFloat humidity))
+      (-> (s/explain-str :data/image-json json)
           res/response
-          (res/status 400)))))
+          (res/status 400)))
+    )
+  )
 
