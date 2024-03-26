@@ -1,0 +1,22 @@
+#+TITLE: Servidor para el proyecto de la asignatura de Topicos Selectos de Inteligencia de Negocios
+
+
+* Prerequisites
+
+- [[https://clojure.org/][Clojure]] 1.11.2 o superior
+- [[https://github.com/technomancy/leiningen][Leiningen]] 2.0.0 o superior.
+    
+* Ejecución
+
+Para iniciar el servidor, ejectuta:
+#+begin_src sh
+  lein ring server-headless
+#+end_src
+
+* Endpoints
+** GET
+#+begin_example
+/metrics - Regresa todos los registros de la base de datos
+
+#+end_example
+
