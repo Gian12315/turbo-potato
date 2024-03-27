@@ -50,13 +50,14 @@
                 :where (select-some-images-where type sent)}))
 
 (defn select-pending-images []
-  (execute-sql {:select [:type :url :description :sent]
+  (let [return-value (execute-sql {:select [:type :url :description :sent]
                 :from [:images]
-                :where [[:= :sent :false]]})
-  
-  (execute-sql {:update :images
-                :set {:sent :true}
-                :where [[:= :sent :false]]}))
+                                   :where [[:= :sent :false]]})]
+    (execute-sql {:update :images
+                  :set {:sent :true}
+                  :where [[:= :sent :false]]})
+
+    return-value))
 
 (defn select-last-image []
   (execute-sql {:select [:type :url :description :sent]

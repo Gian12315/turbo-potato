@@ -49,6 +49,9 @@
 (defn images-last []
   (res/response (db/select-last-image)))
 
+(defn images-pending []
+  (res/response (db/select-pending-images)))
+
 (defn images-some [json]
   (try
     (when (s/invalid? (s/conform :data/image-query json))

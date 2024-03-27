@@ -36,6 +36,9 @@
   (GET "/images/last" []
     (controller/images-last))
 
+  (GET "/images/pending" []
+    (controller/images-pending))
+
   (POST "/images/insert" [:as {data :body}]
     (logging/info "Received body: " data)
     (controller/images-insert data))
