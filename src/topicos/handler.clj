@@ -26,12 +26,23 @@
   (GET "/metrics/last" []
             (controller/metrics-last))
     
-  (POST "/metrics/insert" {{:keys [humidity]} :body}
-    (logging/info "Received humidity value of:" humidity)
-    (controller/metrics-insert humidity))
+  (POST "/metrics/insert" [:as {data :body}]
+    (logging/info "Received body: " data)
+    (controller/metrics-insert data))
 
-  (GET "/images/insert" [json]
-    (controller/images-insert))
+  (GET "/images" []
+    (controller/images))
+
+  (GET "/images/last" []
+    (controller/images-last))
+
+  (POST "/images/insert" [:as {data :body}]
+    (logging/info "Received body: " data)
+    (controller/images-insert data))
+
+  (GET "/images/some" [:as {data :body}]
+    (logging/info "Received body: " data)
+    (controller/images-some data))
 
   (route/not-found "Not Found"))
 
