@@ -11,6 +11,8 @@
                  [org.clojure/tools.logging "1.3.0"]
                  [com.github.seancorfield/honeysql "2.5.1103"]
                  [com.github.seancorfield/next.jdbc "1.3.909"]
+                 ;; https://mvnrepository.com/artifact/commons-codec/commons-codec
+                 [commons-codec/commons-codec "1.16.1"]
                  [org.slf4j/slf4j-simple "2.0.12"]
                  [org.xerial/sqlite-jdbc "3.45.1.0"]]
   :plugins [[lein-ring "0.12.5"]]
