@@ -39,14 +39,14 @@
   (GET "/images/pending" []
     (controller/images-pending))
 
-  (POST "/images/insert" [:as {data :body}]
-    (logging/info "Received body: " data)
-    (controller/images-insert data))
-
   (GET "/images/some" [:as {data :body}]
     (logging/info "Received body: " data)
     (controller/images-some data))
-
+  
+  (POST "/images/insert" [:as {data :body}]
+    (logging/info "Received body: " data)
+    (controller/images-insert data))
+    
   (route/not-found "Not Found"))
 
 (def app
