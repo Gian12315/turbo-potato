@@ -1,7 +1,7 @@
 #+TITLE: Servidor para el proyecto de la asignatura de Topicos Selectos de Inteligencia de Negocios
 
 
-* Prerequisites
+* Prerequisitos
 
 - [[https://clojure.org/][Clojure]] 1.11.2 o superior
 - [[https://github.com/technomancy/leiningen][Leiningen]] 2.0.0 o superior.
@@ -13,41 +13,144 @@ Para iniciar el servidor, ejectuta:
   lein ring server-headless
 #+end_src
 
+* Funcionamiento
+- Todo las rutas del servidor reciben y regresan JSON.
+- Las imagenes estan guardadas codificadas en [[https://es.wikipedia.org/wiki/Base64][Base64]] modificado para URL, las imagenes seran recibidas y enviadas en este formato.
+  - Nota: La implementación de la codificación Base64UrlEncoder en Java no funciona de manera adecuada, utilizar [[https://commons.apache.org/proper/commons-codec/][Apache Codecs]].
+
 * Endpoints
 Todas las peticiones esperan entrada JSON y regresan JSON
-** GET
-#+begin_example
-/metrics
-- Regresa todos los registros de metricas
+** /metrics - GET
+*** Salida
+Regresa todos los registros de metricas
+#+begin_src js
   [
-    {
-      "humidity": INTEGER,
-      "time": DATETIME
-    },
-    ...
+      {
+          "humidity": REAL,
+          "time": DATETIME
+      }
+      ...
   ]
+#+end_src
 
-/metrics/last
-- Regresa el ultimo registro de metricas
+** /metrics/last - GET
+*** Salida
+Regresa el ultimo registro de metricas
+#+begin_src js
   [
     {
-      "humidity": INTEGER,
-      "time": DATETIME
+        "humidity": REAL,
+        "time": DATETIME
     }
   ]
+#+end_src
 
-/metrics/insert
-- Espera una metrica en formato JSON
-{
-  "humidity": INTEGER
-}
-- Regresa el ultimo registro de metricas
+** /metrics/insert - POST
+*** Entrada
+Un JSON con una toma de humedad entre 0 y 100
+#+begin_src js
+  {
+    "humidity": REAL
+  }
+#+end_src
+
+*** Salida
+Regresa el registro de la metríca enviada
+#+begin_src js
+    [
+      {
+        "humidity": INTEGER,
+        "time": DATETIME
+      }
+    ]
+#+end_src
+** /images - GET
+*** Salida
+Un JSON con la información de todas las imagenes contenidas por el servidor, exceptuando la codificación de la imagen misma
+#+begin_src js
   [
-    {
-      "humidity": INTEGER,
-      "time": DATETIME
-    }
+      {
+          "type": STRING,
+          "description": STRING?,
+          "sent": 0 | 1,
+      }
+      ...
   ]
+#+end_src
+
+** /images/last - GET
+*** Salida
+Un JSON con la información de la ultima imagen contenida por el servidor
+#+begin_src js
+  [
+      {
+          "type": STRING,
+          "url": BASE64 URL ENCODED STRING,
+          "description": STRING?,
+          "sent": 0 | 1,
+      }
+  ]
+#+end_src
+** /images/some - GET
+*** Entrada
+Un JSON con por lo menos uno de los dos atributos a consultar (type y sent)
+Es decir, se puede consultar por tipo, o por sent, por ambos a la vez
+#+begin_src js
+  {
+      "type": STRING,
+      "sent": 0 | 1,
+  }
+#+end_src
+
+*** Salida
+Un JSON con la información de todas las imagenes contenidas por el servidor que cumplan la consulta.
+#+begin_src js
+  [
+      {
+          "type": STRING,
+          "url": BASE64 URL ENCODED STRING,
+          "description": STRING?,
+          "sent": 0 | 1,
+      }
+  ]
+#+end_src
+
+** /images/pending - GET
+*** Salida
+Un JSON con la información de todas las imagenes pendientes contenidas por el servidor
+
+*NOTA: Esta ruta actualiza el estado de las imagenes de pendientes, a enviadas, por lo que una segunda petición no regresaría nada*
+#+begin_src js
+  [
+      {
+          "type": STRING,
+          "url": BASE64 URL ENCODED STRING,
+          "description": STRING?,
+          "sent": 0 | 1,
+      }
+  ]
+#+end_src
+** /images/insert - POST
+*** Entrada
+Un JSON con la información de la imagen a guardar en el servidor
+#+begin_src js
+  {
+      "type": STRING,
+      "url": BASE64 URL ENCODED STRING,
+      "description": STRING?,
+  }
+#+end_src
   
-#+end_example
+*** Salida
+Un JSON con la información de la imagen guardada en el servidor
+#+begin_src js
+  [
+      {
+          "type": STRING,
+          "url": BASE64 URL ENCODED STRING,
+          "description": STRING?,
+          "sent": 0 | 1,
+      }
+  ]
+#+end_src
 
