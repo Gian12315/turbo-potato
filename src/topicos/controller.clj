@@ -57,8 +57,10 @@
     (when (s/invalid? (s/conform :data/image-query json))
       (throw (IllegalArgumentException.)))
 
+
+    (let [{:keys [type sent]} json]
+      (res/response (db/select-some-images type sent)))
     
-    (res/response (db/select-some-images (:type json) (:sent json)))
     
     (catch IllegalArgumentException _
       (-> (s/explain-str :data/image-query json)
@@ -71,8 +73,10 @@
     (when (s/invalid? (s/conform :data/image-json json))
       (throw (IllegalArgumentException.)))
 
-    (db/insert-image (:type json) (:url json) (:description json))
-    (res/created "Imaged saved")
+    (let [{:keys [type url description]} json]
+      (db/insert-image type url description))
+    
+    (res/created (db/select-last-image))
     
     (catch IllegalArgumentException _
       (-> (s/explain-str :data/image-json json)
