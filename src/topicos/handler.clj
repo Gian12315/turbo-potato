@@ -21,10 +21,13 @@
     (controller/index))
   
   (GET "/metrics" []
-            (controller/metrics))
+    (controller/metrics))
 
   (GET "/metrics/last" []
-            (controller/metrics-last))
+    (controller/metrics-last))
+
+  (GET "/metrics/time" [:as {data :body}]
+    (controller/metrics-time data))
     
   (POST "/metrics/insert" [:as {data :body}]
     (logging/info "Received body: " data)

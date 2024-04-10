@@ -19,7 +19,12 @@
 
 (defn select-all-metrics []
   (execute-sql {:select [:humidity :time]
-                              :from [:metrics]}))
+                :from [:metrics]}))
+
+(defn select-day-metrics [date]
+  (execute-sql {:select [:humidity :time]
+                :from [:metrics]
+                :where [:= [:date :time] date]}))
 
 (defn select-last-metric []
   (execute-sql {:select [:humidity :time]
@@ -51,7 +56,7 @@
 
 (defn select-pending-images []
   (let [return-value (execute-sql {:select [:type :url :description :sent]
-                :from [:images]
+                                   :from [:images]
                                    :where [[:= :sent :false]]})]
     (execute-sql {:update :images
                   :set {:sent :true}
