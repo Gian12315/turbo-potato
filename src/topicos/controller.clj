@@ -94,7 +94,7 @@
     (let [{:keys [type url description]} json]
       (db/insert-image type url description))
     
-    (res/created (db/select-last-image))
+    (res/created "Hi")
     
     (catch IllegalArgumentException _
       (-> (s/explain-str :data/image-json json)
