@@ -45,14 +45,36 @@ Regresa el ultimo registro de metricas
   ]
 #+end_src
 
+** /metrics/{year}/{month}/{day} - GET
+Ruta dinamica, ejemplos de uso
+*** Entrada
+Si la ruta, al finalizar con {day}, utilizamos el parametro "is-week" con cualquier valor, pasara a devolver los valores de la semana correspondiente, y no los valores de ese día
+#+begin_src 
+/metric/2024/2/2 -> Devuelve los valores del día "2024-02-02"
+
+/metric/2024/2/2?is-week=true -> Devuelve los valores la semana segunda semana 2 del "2024-02"
+#+end_src
+*** Salida
+Regresa el ultimo registro de metricas
+#+begin_src js
+  [
+    {
+        "humidity": REAL,
+        "time": DATETIME
+    }
+  ]
+#+end_src
+
+
 ** /metrics/insert - POST
 *** Entrada
-Un JSON con una toma de humedad entre 0 y 100
-#+begin_src js
-  {
-    "humidity": REAL
-  }
-#+end_src
+Una toma de humedad entre 0 y 100
+
+#+begin_example
+x-www-form-urlencoded
+
+humidity=NUMBER
+#+end_example
 
 *** Salida
 Regresa el registro de la metríca enviada
@@ -66,17 +88,22 @@ Regresa el registro de la metríca enviada
 #+end_src
 ** /images - GET
 *** Salida
-Un JSON con la información de todas las imagenes contenidas por el servidor, exceptuando la codificación de la imagen misma
+Un JSON con la información de todas las imagenes contenidas por el servidor
 #+begin_src js
   [
       {
           "type": STRING,
+          "URL": STRING,
           "description": STRING?,
           "sent": 0 | 1,
       }
       ...
   ]
 #+end_src
+
+** /images/{url} - GET
+Muestra la imagen del URL correspondiente.
+
 
 ** /images/last - GET
 *** Salida
@@ -93,14 +120,16 @@ Un JSON con la información de la ultima imagen contenida por el servidor
 #+end_src
 ** /images/some - GET
 *** Entrada
-Un JSON con por lo menos uno de los dos atributos a consultar (type y sent)
+Por lo menos uno de los dos atributos a consultar (type y sent)
 Es decir, se puede consultar por tipo, o por sent, por ambos a la vez
-#+begin_src js
-  {
-      "type": STRING,
-      "sent": 0 | 1,
-  }
-#+end_src
+
+#+begin_example
+x-www-form-urlencoded
+
+type=STRING
+sent=STRING
+type=STRING&sent=STRING
+#+end_example
 
 *** Salida
 Un JSON con la información de todas las imagenes contenidas por el servidor que cumplan la consulta.
@@ -132,15 +161,13 @@ Un JSON con la información de todas las imagenes pendientes contenidas por el s
 #+end_src
 ** /images/insert - POST
 *** Entrada
-Un JSON con la información de la imagen a guardar en el servidor
-#+begin_src js
-  {
-      "type": STRING,
-      "url": BASE64 URL ENCODED STRING,
-      "description": STRING?,
-  }
-#+end_src
-  
+La información de la imagen a guardar en el servidor
+#+begin_example
+multipart/form-data
+
+type=STRING&image=FILE&description=STRING
+#+end_example
+
 *** Salida
 Un JSON con la información de la imagen guardada en el servidor
 #+begin_src js
