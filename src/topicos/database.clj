@@ -53,16 +53,12 @@
                 :from [:images]}))
 
 
-;; Black Magic, should find cleaner version
-(defn- select-some-images-where [type sent]
-  (into []
-        (remove nil? [(if (not (nil? type)) [:like :type type] nil)
-                      (if (not (nil? sent)) [:= :sent sent] nil)])))
-
 (defn select-some-images [type sent]
   (execute-sql {:select [:type :url :description :sent]
                 :from [:images]
-                :where (select-some-images-where type sent)}))
+                :where [:and
+                        (if (not (nil? type)) [:like :type type] nil)
+                        (if (not (nil? sent)) [:= :sent sent] nil)]}))
 
 (defn select-pending-images []
   (let [return-value (execute-sql {:select [:type :url :description :sent]
@@ -84,7 +80,6 @@
   (execute-sql {:insert-into [:images]
                 :columns [:type :url :description]
                 :values [[type url description]]}))
-
 
 
 ;; Used by ring init

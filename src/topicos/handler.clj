@@ -10,6 +10,7 @@
    [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
    [ring.middleware.json :refer [wrap-json-body wrap-json-response wrap-json-params]]
    [ring.middleware.keyword-params :refer [wrap-keyword-params]]
+   [ring.middleware.multipart-params :refer [wrap-multipart-params]]
    [ring.util.response :as res]))
 
 (defmacro JSON-GET [& body]
@@ -30,21 +31,16 @@
   (GET "/metrics/last" []
     (controller/metrics-last))
       
-  (POST "/metrics/insert" [:as {data :body}]
-    (logging/info "Received body: " data)
-    (controller/metrics-insert data))
+  (POST "/metrics" [humidity]
+    (controller/metrics-insert humidity))
 
-  (GET "/metrics/:year" [year :<< as-int]
+  (GET "/metrics/:year" [year]
     (controller/metrics-year year))
 
-  (GET "/metrics/:year/:month" [year :<< as-int
-                                month :<< as-int]
+  (GET "/metrics/:year/:month" [year month]
     (controller/metrics-month year month))
 
-  (GET "/metrics/:year/:month/:day" [year :<< as-int
-                                      month :<< as-int
-                                     day :<< as-int
-                                     is-week]
+  (GET "/metrics/:year/:month/:day" [year month day is-week]
 
     (if (nil? is-week)
       (controller/metrics-date year month day)
@@ -59,18 +55,20 @@
   (GET "/images/pending" []
     (controller/images-pending))
 
-  (GET "/images/some" [:as {data :body}]
-    (logging/info "Received body: " data)
-    (controller/images-some data))
+  (GET "/images/some" [type sent]
+    (controller/images-some type sent))
   
-  (POST "/images/insert" [:as {data :body}]
-    (controller/images-insert data))
-    
+  (POST "/images/insert" [:as {data :params}]
+    (controller/images-insert (get data "type") (:tempfile (get data "image")) (get data "description")))
+
+  (route/files "/images" {:root "images"})
+  
   (route/not-found "Not Found"))
 
 (def app
   (-> app-routes
       wrap-json-response
       (wrap-json-body {:keywords? true})
+      wrap-multipart-params
       wrap-with-logger
       (wrap-defaults api-defaults)))

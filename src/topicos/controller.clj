@@ -4,6 +4,7 @@
    [clojure.spec.alpha :as s]
    [ring.util.response :as res]
    [clojure.spec.gen.alpha :as gen]
+   [clojure.java.io :as io]
    [topicos.database :as db]
    [topicos.util :as util]
    [clojure.tools.logging :as logging]))
@@ -11,14 +12,10 @@
 
 
 (s/def :data/humidity (s/and number? #(> % 0) #(< % 100)))
-(s/def :data/humidity-json (s/keys :req-un [:data/humidity]))
-
-(def date-regex #"^(19[0-9]{2}|2[0-9]{3})-(0[1-9]|1[012])-([123]0|[012][1-9]|31)$")
-(s/def :data/time #(re-matches date-regex %))
-(s/def :data/time-json (s/keys :req-un [:data/time]))
 
 (s/def :data/type string?)
 (s/def :data/description string?)
+(s/def :data/image #(instance? java.io.File %))
 (def base64-regex #"^[A-Za-z0-9_-]+$")
 (s/def :data/url #(re-matches base64-regex %))
 (s/def :data/sent boolean?)
@@ -63,17 +60,16 @@
 (defn metrics-date [year month day]
   (res/response (db/select-date-metrics (format "%d-%02d-%02d" year month day))))
 
-(defn metrics-insert [json]
+(defn metrics-insert [humidity]
   (try
-    (let [value (s/conform :data/humidity-json json)]
-      (when (s/invalid? value)
-        (throw (IllegalArgumentException.)))
+    (let [value (s/conform :data/humidity humidity)]
+      (when (s/invalid? value) (throw (IllegalArgumentException.)))
       
-      (db/insert-metric (:humidity json))
+      (db/insert-metric humidity)
       (res/status (metrics-last) 201))
     
     (catch IllegalArgumentException _
-      (-> (s/explain-str :data/humidity-json json)
+      (-> (s/explain-str :data/humidity humidity)
           res/response
           (res/status 400)))))
 
@@ -86,36 +82,29 @@
 (defn images-pending []
   (res/response (db/select-pending-images)))
 
-(defn images-some [json]
+(defn images-some [type sent]
+  (res/response (db/select-some-images type sent)))
+
+(defn images-insert
+  [type image description]
+
   (try
-    (when (s/invalid? (s/conform :data/image-query json))
-      (throw (IllegalArgumentException.)))
+    (let [parsed-type (s/conform :data/type type)
+          parsed-image (s/conform :data/image image)
+          parsed-description (s/conform :data/description description)
+          url (format "%s.png" (java.time.Instant/now))
+          image-location (io/file (format "%s/%s" "images" url))]
+      (when (s/invalid? parsed-type) (throw (IllegalArgumentException. (s/explain-str :data/type type))))
+      (when (s/invalid? parsed-image) (throw (IllegalArgumentException. (s/explain-str :data/image image))))
+      (when (s/invalid? parsed-description) (throw (IllegalArgumentException. (s/explain-str :data/description description))))
 
+      (io/copy image image-location)
 
-    (let [{:keys [type sent]} json]
-      (res/response (db/select-some-images type sent)))
+      (db/insert-image type url description)
+      (res/status (images-last) 201))
     
-    
-    (catch IllegalArgumentException _
-      (-> (s/explain-str :data/image-query json)
+    (catch IllegalArgumentException e
+      (-> (.getMessage e)
           res/response
-          (res/status 400)))
-    ))
-
-(defn images-insert [json]
-  (try
-    (when (s/invalid? (s/conform :data/image-json json))
-      (throw (IllegalArgumentException.)))
-
-    (let [{:keys [type url description]} json]
-      (db/insert-image type url description))
-    
-    (res/created "Hi")
-    
-    (catch IllegalArgumentException _
-      (-> (s/explain-str :data/image-json json)
-          res/response
-          (res/status 400)))
-    )
-  )
-
+          (res/status 400)))))
+  
