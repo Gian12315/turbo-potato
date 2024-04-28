@@ -21,10 +21,15 @@
   (execute-sql {:select [:humidity :time]
                 :from [:metrics]}))
 
-(defn select-day-metrics [date]
+(defn select-date-metrics [date]
   (execute-sql {:select [:humidity :time]
                 :from [:metrics]
                 :where [:= [:date :time] date]}))
+
+(defn select-range-metrics [startDate endDate]
+  (execute-sql {:select [:humidity :time]
+              :from [:metrics]
+              :where [:between :time startDate endDate]}))
 
 (defn select-last-metric []
   (execute-sql {:select [:humidity :time]
@@ -37,6 +42,11 @@
     (execute-sql {:insert-into [:metrics]
                                   :columns [:humidity :time]
                   :values [[humidity timestamp]]})))
+
+(defn insert-metric-timestamp [humidity timestamp]
+    (execute-sql {:insert-into [:metrics]
+                                  :columns [:humidity :time]
+                  :values [[humidity timestamp]]}))
 
 (defn select-all-images []
   (execute-sql {:select [:type :description :sent]
@@ -76,6 +86,7 @@
                 :values [[type url description]]}))
 
 
+
 ;; Used by ring init
 (defn- create-table
   "Creates both sqlite database tables"
@@ -95,3 +106,6 @@
                                   [:description :text]
                                   [:sent :boolean [:default :false][:not nil]]]
                                  }))
+
+
+

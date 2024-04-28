@@ -8,6 +8,8 @@
    [topicos.util :as util]
    [clojure.tools.logging :as logging]))
 
+
+
 (s/def :data/humidity (s/and number? #(> % 0) #(< % 100)))
 (s/def :data/humidity-json (s/keys :req-un [:data/humidity]))
 
@@ -24,6 +26,13 @@
                                 :opt-un [:data/description]))
 (s/def :data/image-query (s/keys :req-un [(or :data/type :data/sent)]))
 
+(comment 
+  (defn mock-data []
+    (doseq [i (range 1 13) j (range 1 28) k (range 0 24)]
+      (db/insert-metric-timestamp
+       (gen/generate (s/gen :data/humidity))
+       (java.time.LocalDateTime/of 2024 i j k 0 0)))))
+
 (defn index []
   (res/response (str "Hello")))
 
@@ -33,19 +42,26 @@
 (defn metrics-last []
   (res/response (db/select-last-metric)))
 
-(defn metrics-time [json]
-  (try
-    (let [value (s/conform :data/time-json json)]
-      (when (s/invalid? value)
-        (throw (IllegalArgumentException.)))
+(defn metrics-year [year]
+  (let [startDate (format "%d-00-00" year)
+        endDate (format "%d-12-31" year)]
 
-      (res/response (db/select-day-metrics (:time json))))
-    
-    (catch IllegalArgumentException _
-      (-> (s/explain-str :data/time-json json)
-          res/response
-          (res/status 400))))
-  )
+    (res/response (db/select-range-metrics startDate endDate))))
+
+(defn metrics-month [year month]
+  (let [startDate (format "%d-%02d-00" year month)
+        endDate (format "%d-%02d-31" year month)]
+
+    (res/response (db/select-range-metrics startDate endDate))))
+
+(defn metrics-week [year month week]
+  (let [startDate (format "%d-%02d-%02d" year month (* (- week 1) 7))
+        endDate (format "%d-%02d-%02d" year month (* week 7))]
+
+    (res/response (db/select-range-metrics startDate endDate))))
+
+(defn metrics-date [year month day]
+  (res/response (db/select-date-metrics (format "%d-%02d-%02d" year month day))))
 
 (defn metrics-insert [json]
   (try
