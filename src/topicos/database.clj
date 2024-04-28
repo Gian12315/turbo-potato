@@ -49,7 +49,7 @@
                   :values [[humidity timestamp]]}))
 
 (defn select-all-images []
-  (execute-sql {:select [:type :description :sent]
+  (execute-sql {:select [:type :url :description :sent]
                 :from [:images]}))
 
 
