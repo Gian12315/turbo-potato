@@ -34,13 +34,13 @@
   (POST "/metrics" [humidity]
     (controller/metrics-insert humidity))
 
-  (GET "/metrics/:year" [year]
+  (GET "/metrics/:year" [year :<< as-int]
     (controller/metrics-year year))
 
-  (GET "/metrics/:year/:month" [year month]
+  (GET "/metrics/:year/:month" [year :<< as-int month :<< as-int]
     (controller/metrics-month year month))
 
-  (GET "/metrics/:year/:month/:day" [year month day is-week]
+  (GET "/metrics/:year/:month/:day" [year :<< as-int month :<< as-int day :<< as-int is-week]
 
     (if (nil? is-week)
       (controller/metrics-date year month day)

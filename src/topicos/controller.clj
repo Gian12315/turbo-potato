@@ -62,7 +62,7 @@
 
 (defn metrics-insert [humidity]
   (try
-    (let [value (s/conform :data/humidity humidity)]
+    (let [value (s/conform :data/humidity (Double/parseDouble humidity))]
       (when (s/invalid? value) (throw (IllegalArgumentException.)))
       
       (db/insert-metric humidity)
