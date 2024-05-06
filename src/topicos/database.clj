@@ -17,6 +17,11 @@
   `(jdbc/execute! ds
                   (sql/format ~query) {:builder-fn as-unqualified-maps}))
 
+(defn get-current-time []
+  (java.time.LocalDateTime/ofInstant
+   (java.time.Instant/now)
+   (java.time.ZoneId/of "Mexico/General")))
+
 (defn select-all-metrics []
   (execute-sql {:select [:humidity :time]
                 :from [:metrics]}))
@@ -28,24 +33,23 @@
 
 (defn select-range-metrics [startDate endDate]
   (execute-sql {:select [:humidity :time]
-              :from [:metrics]
-              :where [:between :time startDate endDate]}))
+                :from [:metrics]
+                :where [:between :time startDate endDate]}))
 
 (defn select-last-metric []
   (execute-sql {:select [:humidity :time]
-                              :from [:metrics]
-                              :order-by [[:id :desc]]
-                              :limit 1}))
+                :from [:metrics]
+                :order-by [[:id :desc]]
+                :limit 1}))
 
 (defn insert-metric [humidity]
-  (let [timestamp (java.time.LocalDateTime/ofInstant (java.time.Instant/now) (java.time.ZoneId/of "Mexico/General"))]
-    (execute-sql {:insert-into [:metrics]
-                                  :columns [:humidity :time]
-                  :values [[humidity timestamp]]})))
+  (execute-sql {:insert-into [:metrics]
+                :columns [:humidity :time]
+                :values [[humidity (get-current-time)]]}))
 
 (defn insert-metric-timestamp [humidity timestamp]
     (execute-sql {:insert-into [:metrics]
-                                  :columns [:humidity :time]
+                  :columns [:humidity :time]
                   :values [[humidity timestamp]]}))
 
 (defn select-all-images []
@@ -61,9 +65,11 @@
                         (if (not (nil? sent)) [:= :sent sent] nil)]}))
 
 (defn select-pending-images []
-  (let [return-value (execute-sql {:select [:type :url :description :sent]
-                                   :from [:images]
-                                   :where [[:= :sent :false]]})]
+  (let [return-value
+        (execute-sql {:select [:type :url :description :sent]
+                      :from [:images]
+                      :where [[:= :sent :false]]})]
+    
     (execute-sql {:update :images
                   :set {:sent :true}
                   :where [[:= :sent :false]]})
@@ -78,9 +84,8 @@
 
 (defn insert-image [type url description]
   (execute-sql {:insert-into [:images]
-                :columns [:type :url :description]
-                :values [[type url description]]}))
-
+                :columns [:type :url :description :time]
+                :values [[type url description (get-current-time)]]}))
 
 ;; Used by ring init
 (defn- create-table
@@ -88,19 +93,17 @@
   []
   
   (execute-sql {:create-table [:metrics :if-not-exists]
-                                 :with-columns
-                                 [[:id :integer :primary-key :autoincrement]
-                                  [:humidity :float [:not nil]]
-                                  [:time :datetime [:not nil]]]})
+                :with-columns [[:id :integer :primary-key :autoincrement]
+                               [:humidity :float [:not nil]]
+                               [:time :datetime [:not nil]]]})
 
   (execute-sql {:create-table [:images :if-not-exists]
-                                 :with-columns
-                                 [[:id :integer :primary-key :autoincrement]
-                                  [:type :text [:not nil]]
-                                  [:url :text [:not nil]]
-                                  [:description :text]
-                                  [:sent :boolean [:default :false][:not nil]]]
-                                 }))
+                :with-columns [[:id :integer :primary-key :autoincrement]
+                               [:type :text [:not nil]]
+                               [:url :text [:not nil]]
+                               [:description :text]
+                               [:sent :boolean [:default :false][:not nil]]
+                               [:time :datetime [:not nil]]]}))
 
 
 

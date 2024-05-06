@@ -59,6 +59,11 @@
     (controller/images-some type sent))
   
   (POST "/images/insert" [:as {data :params}]
+    (println "==============")
+    (println (get data "type"))
+    (println (:tempfile (get data "type")))
+    (println (get data "description"))
+    (println "==============")
     (controller/images-insert (get data "type") (:tempfile (get data "image")) (get data "description")))
 
   (route/files "/images" {:root "images"})

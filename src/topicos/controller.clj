@@ -13,6 +13,8 @@
 
 (s/def :data/humidity (s/and number? #(> % 0) #(< % 100)))
 
+(s/def :data/humidity-standard (s/and number? #(> % 40) #(< % 60)))
+
 (s/def :data/type string?)
 (s/def :data/description string?)
 (s/def :data/image #(instance? java.io.File %))
@@ -26,9 +28,9 @@
 (comment 
   (defn mock-data []
     (doseq [i (range 1 13) j (range 1 28) k (range 0 24)]
-      (db/insert-metric-timestamp
+      (let [_ (db/insert-metric-timestamp
        (gen/generate (s/gen :data/humidity))
-       (java.time.LocalDateTime/of 2024 i j k 0 0)))))
+       (java.time.LocalDateTime/of 2023 i j k 0 0))]))))
 
 (defn index []
   (res/response (str "Hello")))
