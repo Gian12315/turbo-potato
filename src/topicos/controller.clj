@@ -7,7 +7,8 @@
    [clojure.java.io :as io]
    [topicos.database :as db]
    [topicos.util :as util]
-   [clojure.tools.logging :as logging]))
+   [clojure.tools.logging :as logging])
+  (:import java.time.format.DateTimeFormatter))
 
 
 
@@ -87,6 +88,11 @@
 (defn images-some [type sent]
   (res/response (db/select-some-images type sent)))
 
+
+(def PATTERN_FORMAT "uuuu_MM_dd_HH_mm_ss_A")
+
+(def formatter (.withZone (DateTimeFormatter/ofPattern PATTERN_FORMAT) java.time.ZoneOffset/UTC))
+
 (defn images-insert
   [type image description]
 
@@ -94,7 +100,7 @@
     (let [parsed-type (s/conform :data/type type)
           parsed-image (s/conform :data/image image)
           parsed-description (s/conform :data/description description)
-          url (format "%s.png" (java.time.Instant/now))
+          url (format "%s.png" (.format formatter (java.time.Instant/now)))
           image-location (io/file (format "%s/%s" "images" url))]
       (when (s/invalid? parsed-type) (throw (IllegalArgumentException. (s/explain-str :data/type type))))
       (when (s/invalid? parsed-image) (throw (IllegalArgumentException. (s/explain-str :data/image image))))
