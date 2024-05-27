@@ -31,7 +31,7 @@
   (GET "/access/last" []
     (controller/access-last))
       
-  (POST "/access" [person_type access_type]
+  (POST "/access/insert" [person_type access_type]
     (controller/access-insert person_type access_type))
 
   (GET "/access/:year" [year :<< as-int]
