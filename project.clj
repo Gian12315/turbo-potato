@@ -1,4 +1,4 @@
-(defproject topicos "0.1.0-SNAPSHOT"
+(defproject servidor "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :min-lein-version "2.0.0"
@@ -17,8 +17,8 @@
                  [org.xerial/sqlite-jdbc "3.45.1.0"]]
   :plugins [[lein-ring "0.12.5"]]
   :jvm-opts ["-Dclojure.tools.logging.factory=clojure.tools.logging.impl/slf4j-factory"]
-  :ring {:init topicos.database/create-table
-         :handler topicos.handler/app
+  :ring {:init servidor.database/create-table
+         :handler servidor.handler/app
          :port 3000}
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]

@@ -1,18 +1,20 @@
-(ns topicos.controller
+(ns servidor.controller
   (:require
    [cheshire.core :as json]
    [clojure.spec.alpha :as s]
    [ring.util.response :as res]
    [clojure.spec.gen.alpha :as gen]
    [clojure.java.io :as io]
-   [topicos.database :as db]
-   [topicos.util :as util]
+   [servidor.database :as db]
+   [servidor.util :as util]
    [clojure.tools.logging :as logging])
   (:import java.time.format.DateTimeFormatter))
 
-
-
 (s/def :data/humidity (s/and number? #(> % 0) #(< % 100)))
+
+
+(s/def :data/person_type #{"niño" "adulto"})
+(s/def :data/access_type #{"entrada" "salida"})
 
 (s/def :data/humidity-standard (s/and number? #(> % 40) #(< % 60)))
 
@@ -28,51 +30,55 @@
 
 (comment 
   (defn mock-data []
-    (doseq [i (range 1 13) j (range 1 28) k (range 0 24)]
-      (let [_ (db/insert-metric-timestamp
-       (gen/generate (s/gen :data/humidity))
-       (java.time.LocalDateTime/of 2023 i j k 0 0))]))))
+    (doseq [month (range 1 3) day (range 1 28) hour (range 0 24) minute (range 0 60)]
+      (when (= 1 (rand-int 2))
+        (db/insert-access-timestamp
+               (gen/generate (s/gen :data/person_type))
+               (gen/generate (s/gen :data/access_type))
+               (java.time.LocalDateTime/of 2024 month day hour minute minute))))))
 
 (defn index []
   (res/response (str "Hello")))
 
-(defn metrics []
-  (res/response (db/select-all-metrics)))
+(defn access []
+  (res/response (db/select-all-access)))
 
-(defn metrics-last []
-  (res/response (db/select-last-metric)))
+(defn access-last []
+  (res/response (db/select-last-access)))
 
-(defn metrics-year [year]
+(defn access-year [year]
   (let [startDate (format "%d-00-00" year)
         endDate (format "%d-12-31" year)]
 
-    (res/response (db/select-range-metrics startDate endDate))))
+    (res/response (db/select-range-access startDate endDate))))
 
-(defn metrics-month [year month]
+(defn access-month [year month]
   (let [startDate (format "%d-%02d-00" year month)
         endDate (format "%d-%02d-31" year month)]
 
-    (res/response (db/select-range-metrics startDate endDate))))
+    (res/response (db/select-range-access startDate endDate))))
 
-(defn metrics-week [year month week]
+(defn access-week [year month week]
   (let [startDate (format "%d-%02d-%02d" year month (* (- week 1) 7))
         endDate (format "%d-%02d-%02d" year month (* week 7))]
 
-    (res/response (db/select-range-metrics startDate endDate))))
+    (res/response (db/select-range-access startDate endDate))))
 
-(defn metrics-date [year month day]
-  (res/response (db/select-date-metrics (format "%d-%02d-%02d" year month day))))
+(defn access-date [year month day]
+  (res/response (db/select-date-access (format "%d-%02d-%02d" year month day))))
 
-(defn metrics-insert [humidity]
+(defn access-insert [person_type access_type]
   (try
-    (let [value (s/conform :data/humidity (Double/parseDouble humidity))]
-      (when (s/invalid? value) (throw (IllegalArgumentException.)))
+    (let [person (s/conform :data/person_type person_type)
+          access (s/conform :data/access_type access_type)]
+      (when (s/invalid? person) (throw (IllegalArgumentException. (s/explain-str :data/person_type person_type))))
+      (when (s/invalid? access) (throw (IllegalArgumentException. (s/explain-str :data/access_type access_type))))
       
-      (db/insert-metric humidity)
-      (res/status (metrics-last) 201))
+      (db/insert-access person access)
+      (res/status (access-last) 201))
     
-    (catch IllegalArgumentException _
-      (-> (s/explain-str :data/humidity humidity)
+    (catch IllegalArgumentException e
+      (-> (.getMessage e)
           res/response
           (res/status 400)))))
 

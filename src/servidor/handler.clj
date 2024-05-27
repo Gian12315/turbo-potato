@@ -1,8 +1,8 @@
-(ns topicos.handler
+(ns servidor.handler
   (:require
    [ring.logger :refer [wrap-with-logger]]
    [clojure.tools.logging :as logging]
-   [topicos.controller :as controller]
+   [servidor.controller :as controller]
    [compojure.core :refer :all]
    [compojure.route :as route]
    [compojure.coercions :refer [as-int]]
@@ -25,26 +25,26 @@
   (GET "/" []
     (controller/index))
   
-  (GET "/metrics" []
-    (controller/metrics))
+  (GET "/access" []
+    (controller/access))
 
-  (GET "/metrics/last" []
-    (controller/metrics-last))
+  (GET "/access/last" []
+    (controller/access-last))
       
-  (POST "/metrics" [humidity]
-    (controller/metrics-insert humidity))
+  (POST "/access" [person_type access_type]
+    (controller/access-insert person_type access_type))
 
-  (GET "/metrics/:year" [year :<< as-int]
-    (controller/metrics-year year))
+  (GET "/access/:year" [year :<< as-int]
+    (controller/access-year year))
 
-  (GET "/metrics/:year/:month" [year :<< as-int month :<< as-int]
-    (controller/metrics-month year month))
+  (GET "/access/:year/:month" [year :<< as-int month :<< as-int]
+    (controller/access-month year month))
 
-  (GET "/metrics/:year/:month/:day" [year :<< as-int month :<< as-int day :<< as-int is-week]
+  (GET "/access/:year/:month/:day" [year :<< as-int month :<< as-int day :<< as-int is-week]
 
     (if (nil? is-week)
-      (controller/metrics-date year month day)
-      (controller/metrics-week year month day)))
+      (controller/access-date year month day)
+      (controller/access-week year month day)))
 
   (GET "/images" []
     (controller/images))
