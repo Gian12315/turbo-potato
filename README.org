@@ -20,7 +20,7 @@ Para iniciar el servidor, ejectuta:
 
 * Endpoints
 Todas las peticiones esperan entrada JSON y regresan JSON
-** /metrics - GET
+** /access - GET
 *** Salida
 Regresa todos los registros de metricas
 #+begin_src js
@@ -33,7 +33,7 @@ Regresa todos los registros de metricas
   ]
 #+end_src
 
-** /metrics/last - GET
+** /access/last - GET
 *** Salida
 Regresa el ultimo registro de metricas
 #+begin_src js
@@ -45,7 +45,7 @@ Regresa el ultimo registro de metricas
   ]
 #+end_src
 
-** /metrics/{year}/{month}/{day} - GET
+** /access/{year}/{month}/{day} - GET
 Ruta dinamica, ejemplos de uso
 *** Entrada
 Si la ruta, al finalizar con {day}, utilizamos el parametro "is-week" con cualquier valor, pasara a devolver los valores de la semana correspondiente, y no los valores de ese día
@@ -66,14 +66,15 @@ Regresa el ultimo registro de metricas
 #+end_src
 
 
-** /metrics/insert - POST
+** /access/insert - POST
 *** Entrada
-Una toma de humedad entre 0 y 100
+person_type = "niño" o "adulto"
+access_type = "entrada" o "salida"
 
 #+begin_example
 x-www-form-urlencoded
 
-humidity=NUMBER
+person_type=STRING&access_type=STRING
 #+end_example
 
 *** Salida
@@ -81,7 +82,8 @@ Regresa el registro de la metríca enviada
 #+begin_src js
     [
       {
-        "humidity": INTEGER,
+        "person_type": STRING,
+        "access_type": STRING
         "time": DATETIME
       }
     ]
